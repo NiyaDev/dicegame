@@ -1,0 +1,22 @@
+{
+  "langrev": "1",
+  "warnings": [ "no-unused" ],
+  "dependency-search-paths": [ "lib" ],
+  "dependencies": [ ],
+  "authors": [ "NiyaDev" ],
+  "version": "0.1.0",
+  "test-sources": [ "test/**" ],
+  "output": "build",
+  "targets": {
+    "server": {
+      "type": "executable",
+      "sources": [ "src/server/**", "src/common/**" ],
+    },
+    "game": {
+      "type": "executable",
+      "sources": [ "src/game/**", "src/common/**" ],
+    }
+  },
+  "cpu": "generic",
+  "opt": "O0",
+}
