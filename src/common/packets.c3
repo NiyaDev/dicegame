@@ -10,6 +10,9 @@ struct Packet {
 enum PacketType : char {
   PING,
   MULTIPACKET_HEADER,
+  VERSION,
+  USERNAME,
+  PASSWORD,
   QUIT,
 }
 
@@ -17,8 +20,25 @@ enum PacketType : char {
 fn char[] Packet.as_data(&self) {
   char[] dat = mem::new_array(char, 20);
   dat[0] = self.type.ordinal;
-  if (self.data.len == 19) mem::copy(&dat[1], self.data, 19);
+  mem::copy(&dat[1], self.data, self.data.len);
 
   return dat;
+}
+
+
+
+module common::packet;
+
+<* Create new packet *>
+fn Packet? new(PacketType type, void* data = null) {
+  Packet output;
+  output.type = type;
+
+  // Copy data based on type
+  switch (type) {
+    default:
+  }
+
+  return output;
 }
 
