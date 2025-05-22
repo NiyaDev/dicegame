@@ -6,10 +6,13 @@ import common;
 import pleroma;
 
 
+const String GAME_VERSION = "0.1.0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+
 Keybindings keybinds;
 
 fn int main(String[] args) {
 	raylib::init_window(1280,720,"test");
+	raylib::set_target_fps(60);
 
 	// Keybinds
 	keybinds.set("test1", {.type=KEYBOARD,.kb=raylib::KEY_W});
@@ -19,36 +22,12 @@ fn int main(String[] args) {
 		if (keybinds.is_pressed("test1")) {
 			TcpSocket socket = tcp::connect("10.0.0.208", 8080)!!;
 
-			Packet p = packet::new(PING)!!;
-			char[] data = p.as_data();
-			socket.write(data)!!;
-			io::printn("Sent PING");
-			free(data);
+			socket.send_packet(PING);
+			socket.send_packet(VERSION);
+			Packet p = socket.get_packet();
+			assert((String)p.data == GAME_VERSION, "Failed to recieve correct version number [%s]", (String)p.data);
+			socket.send_packet(QUIT);
 			
-			Packet v = packet::new(VERSION)!!;
-			data = v.as_data();
-			socket.write(data)!!;
-			io::printn("Sent VERSION");
-			free(data);
-
-			data = mem::new_array(char, 20);
-			socket.read(data)!!;
-			io::printfn("Recieved [%s]", (String)data);
-			free(data);
-
-			Packet u = packet::new(USERNAME)!!;
-			u.data = mem::new_array(char, 19);
-			mem::copy(u.data, "USERNAME", 8);
-			data = u.as_data();
-			socket.write(data)!!;
-			io::printn("Sent USERNAME");
-			free(data);
-
-			Packet q = packet::new(QUIT)!!;
-			data = q.as_data();
-			socket.write(data)!!;
-			io::printn("Sent QUIT");
-			free(data);
 
 			socket.close()!!;
 		}
