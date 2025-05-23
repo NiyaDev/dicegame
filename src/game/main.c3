@@ -6,7 +6,7 @@ import common;
 import pleroma;
 
 
-const String GAME_VERSION = "0.1.0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+const String GAME_VERSION = "0.1.0";
 
 Keybindings keybinds;
 
@@ -20,12 +20,12 @@ fn int main(String[] args) {
 
 	while (!raylib::window_should_close()) {
 		if (keybinds.is_pressed("test1")) {
-			TcpSocket socket = tcp::connect("10.0.0.208", 8080)!!;
+			TcpSocket socket = tcp::connect(common::IP_ADDRESS, common::PORT)!!;
 
 			socket.send_packet(PING);
 			socket.send_packet(VERSION);
 			Packet p = socket.get_packet();
-			assert((String)p.data == GAME_VERSION, "Failed to recieve correct version number [%s]", (String)p.data);
+			assert(p.data.as_string() == GAME_VERSION, "Failed to recieve correct version number [%s]", (String)p.data);
 			socket.send_packet(QUIT);
 			
 

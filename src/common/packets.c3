@@ -2,6 +2,7 @@
 module common;
 
 
+
 struct Packet {
   PacketType type;
   char[] data;
@@ -9,10 +10,17 @@ struct Packet {
 
 enum PacketType : char {
   PING,
+
   MULTIPACKET_HEADER,
+
   VERSION,
+
   USERNAME,
   PASSWORD,
+
+  CONFIRM,
+  DENY,
+
   QUIT,
 }
 
@@ -42,6 +50,8 @@ fn void Socket.send_packet(&self, PacketType type, char[] data = {}) {
     case VERSION:  io::printfn("Requested VERSION");
     case USERNAME: io::printfn("Sent USERNAME []"); // TODO:
     case PASSWORD: io::printfn("Sent PASSWORD []"); // TODO:
+    case CONFIRM:  io::printfn("Sent CONFIRM");
+    case DENY:     io::printfn("Sent DENY");
     case QUIT:     io::printfn("Sent QUIT");
   }
 }
@@ -54,13 +64,17 @@ fn Packet Socket.get_packet(&self) {
   output.type = PacketType.from_ordinal(data[0]);
   
   switch (output.type) {
-    case PING: io::printfn("Recieved PING");
+    case PING:
+      io::printfn("Recieved PING");
+
     case MULTIPACKET_HEADER: // TODO:
       io::printfn("Recieved MULTIPACKET_HEADER");
+
     case VERSION:
       output.data = mem::temp_array(char, 19);
       mem::copy(output.data, &data[1], 19);
       io::printfn("Recieved VERSION [%s]", (String)output.data);
+
     case USERNAME:
       output.data = mem::temp_array(char, 19);
       mem::copy(output.data, &data[1], 19);
@@ -69,7 +83,14 @@ fn Packet Socket.get_packet(&self) {
       output.data = mem::temp_array(char, 19);
       mem::copy(output.data, &data[1], 19);
       io::printfn("Recieved PASSWORD [%s]", (String)output.data);
-    case QUIT: io::printfn("Recieved PING");
+
+    case CONFIRM:
+      io::printfn("Recieved CONFIRM");
+    case DENY:
+      io::printfn("Recieved DENY");
+
+    case QUIT:
+      io::printfn("Recieved PING");
   }
 
   return output;
@@ -79,13 +100,6 @@ fn Packet new(PacketType type, char[] data = {}) {
   Packet output;
   output.type = type;
   output.data = data;
-
-  //switch (type) {
-  //  case MULTIPACKET_HEADER:
-  //  case VERSION:
-  //    
-  //  default:
-  //}
 
   return output;
 }

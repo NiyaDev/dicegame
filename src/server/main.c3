@@ -8,16 +8,16 @@ import common;
 
 
 const String GAME_VERSION = "0.1.0";
-const uint PORT = 8080;
 
 Connection c;
 
 fn void listen() {
-	c.server = tcp::listen("10.0.0.208", PORT, 10)!!;
+	c.server = tcp::listen(common::IP_ADDRESS, common::PORT, 10)!!;
 	c.socket = tcp::accept(&c.server)!!;
 }
 
 fn int main() {
+	login::load_users();
 	listen();
 
 	while (true) {
@@ -27,11 +27,9 @@ fn int main() {
 		switch (packet.type) {
 			case PING:
 				io::printfn("Recieved PING");
-				//Packet ping = packet::new(PING);
 			case VERSION:
 				io::printfn("Recieved VERSION request\nSent Version [%s]", GAME_VERSION);
 				c.socket.send_packet(VERSION, (char[])GAME_VERSION);
-				//c.socket.write((char[])GAME_VERSION)!!;
 			case USERNAME:
 				io::printfn("Recieved USERNAME [%s]", (String)packet.data);
 			case QUIT:
@@ -42,5 +40,7 @@ fn int main() {
 			default:
 		}
 	}
+
+	login::users.save();
 	//return 0;
 }
