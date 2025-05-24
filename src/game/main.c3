@@ -22,10 +22,12 @@ fn int main(String[] args) {
 		if (keybinds.is_pressed("test1")) {
 			TcpSocket socket = tcp::connect(common::IP_ADDRESS, common::PORT)!!;
 
-			socket.send_packet(PING);
+			//socket.send_packet(PING);
 			socket.send_packet(VERSION);
 			Packet p = socket.get_packet();
 			assert(p.data.as_string() == GAME_VERSION, "Failed to recieve correct version number [%s]", (String)p.data);
+			socket.send_packet(USERNAME, {'t','e','s','t'});
+			socket.send_packet(PASSWORD, {'b','e','s','t'});
 			socket.send_packet(QUIT);
 			
 

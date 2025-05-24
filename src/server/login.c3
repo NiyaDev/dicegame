@@ -19,6 +19,8 @@ struct User {
 
 <* Loads users from file *>
 fn void load_users(String filepath = LOGIN_DATA) {
+  if (!file::is_file(LOGIN_DATA)) return;
+
   char[] data = file::load_temp(filepath)!!;
   usz total = file::get_size(filepath)!! / USER_SIZE;
 

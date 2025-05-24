@@ -26,9 +26,10 @@ enum PacketType : char {
 
 <* Converts packet to char array to be sent over socket *>
 fn char[] Packet.as_data(&self) {
-  char[] dat = mem::temp_array(char, 20);
+  char[] dat = mem::temp_array(char, self.data.len + 2);
   dat[0] = self.type.ordinal;
-  mem::copy(&dat[1], self.data, self.data.len);
+  dat[1] = (char)self.data.len;
+  mem::copy(&dat[2], self.data, self.data.len);
 
   return dat;
 }
@@ -48,8 +49,8 @@ fn void Socket.send_packet(&self, PacketType type, char[] data = {}) {
     case PING:     io::printfn("Sent PING");
     case MULTIPACKET_HEADER: io::printfn("Sent MULTIPACKET_HEADER");
     case VERSION:  io::printfn("Requested VERSION");
-    case USERNAME: io::printfn("Sent USERNAME []"); // TODO:
-    case PASSWORD: io::printfn("Sent PASSWORD []"); // TODO:
+    case USERNAME: io::printfn("Sent USERNAME [%s]", (String)data);
+    case PASSWORD: io::printfn("Sent PASSWORD [%s]", (String)data);
     case CONFIRM:  io::printfn("Sent CONFIRM");
     case DENY:     io::printfn("Sent DENY");
     case QUIT:     io::printfn("Sent QUIT");
@@ -57,11 +58,13 @@ fn void Socket.send_packet(&self, PacketType type, char[] data = {}) {
 }
 <* Recieve packet from server *>
 fn Packet Socket.get_packet(&self) {
-  char[] data = mem::temp_array(char, 20);
+  char[] header = mem::temp_array(char, 2);
+  self.read(header)!!;
+  char[] data = mem::temp_array(char, header[1]);
   self.read(data)!!;
 
   Packet output;
-  output.type = PacketType.from_ordinal(data[0]);
+  output.type = PacketType.from_ordinal(header[0]);
   
   switch (output.type) {
     case PING:
@@ -71,17 +74,17 @@ fn Packet Socket.get_packet(&self) {
       io::printfn("Recieved MULTIPACKET_HEADER");
 
     case VERSION:
-      output.data = mem::temp_array(char, 19);
-      mem::copy(output.data, &data[1], 19);
+      output.data = mem::temp_array(char, 16);
+      mem::copy(output.data, data, 16);
       io::printfn("Recieved VERSION [%s]", (String)output.data);
 
     case USERNAME:
-      output.data = mem::temp_array(char, 19);
-      mem::copy(output.data, &data[1], 19);
+      output.data = mem::temp_array(char, 16);
+      mem::copy(output.data, data, 16);
       io::printfn("Recieved USERNAME [%s]", (String)output.data);
     case PASSWORD:
-      output.data = mem::temp_array(char, 19);
-      mem::copy(output.data, &data[1], 19);
+      output.data = mem::temp_array(char, 16);
+      mem::copy(output.data, data, 16);
       io::printfn("Recieved PASSWORD [%s]", (String)output.data);
 
     case CONFIRM:
