@@ -17,6 +17,7 @@
       "sources": [ "src/game/**", "src/common/**" ],
       "dependencies": [ "pleroma" ],
       "dependency-search-paths": [ "../pleroma/" ],
+      "linked-libraries": [ "raygui" ],
     }
   },
   "cpu": "generic",

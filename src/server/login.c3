@@ -17,9 +17,34 @@ struct User {
   int currency;
 }
 
+faultdef INCORRECT_PASS;
+faultdef INCORRECT_USER;
+
+<* Returns whether user *>
+fn bool? List{User}.contains(&self, String user, String pass) {
+  for (int i; i < self.len(); i++) {
+    if (self.get(i).username == user) {
+      if (self.get(i).password == pass) {
+        return true;
+      } else { return INCORRECT_PASS?; }
+    }
+  }
+  return INCORRECT_USER?;
+}
+
 <* Loads users from file *>
 fn void load_users(String filepath = LOGIN_DATA) {
-  if (!file::is_file(LOGIN_DATA)) return;
+  if (!file::is_file(LOGIN_DATA)) {
+    users.push({"fug","andulu",100,100});
+    users.push({"niya","konoka123",100,100});
+    users.push({"riel","jarrod",100,100});
+    users.push({"king","regulus",100,100});
+    users.push({"asyshi","aang",100,100});
+    users.push({"vexus","mothehoeless",100,100});
+    users.push({"creole","markus",100,100});
+    users.push({"daisy","petunia",100,100});
+    return;
+  }
 
   char[] data = file::load_temp(filepath)!!;
   usz total = file::get_size(filepath)!! / USER_SIZE;

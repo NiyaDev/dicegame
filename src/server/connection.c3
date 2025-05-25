@@ -7,7 +7,8 @@ import common;
 struct Connection {
 	TcpServerSocket server;
 	TcpSocket socket;
-}
+
+	String username, password;}
 
 faultdef NO_PACKET;
 

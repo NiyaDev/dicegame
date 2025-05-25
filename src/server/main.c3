@@ -24,31 +24,20 @@ fn int main() {
 		Packet packet = c.socket.get_packet();
 
 		switch (packet.type) {
-			case VERSION:
-				c.socket.send_packet(VERSION, (char[])GAME_VERSION);
-			case QUIT:
-				c.close();
-				login::users.save();
-				listen();
-				login::load_users();
-				continue;
-			default:
-		}
-		//Packet? packet = c.read();
-		//if (catch packet) continue;
-		
-		/*
-		switch (packet.type) {
-			case PING:
-				io::printfn("Recieved PING");
-			case VERSION:
-				io::printfn("Recieved VERSION request\nSent Version [%s]", GAME_VERSION);
-				c.socket.send_packet(VERSION, (char[])GAME_VERSION);
+			case VERSION_REQ:
+				c.socket.send_packet(VERSION_SRV, (char[])GAME_VERSION);
+
 			case USERNAME:
-				io::printfn("Recieved USERNAME [%s]", (String)packet.data);
-			
+				c.username = ((String)packet.data).copy(allocator::heap());
+			case PASSWORD:
+				c.password = ((String)packet.data).copy(allocator::heap());
+			case LOGIN:
+				bool? res = login::users.contains(c.username, c.password);
+				if (try res && res) {
+					c.socket.send_packet(CONFIRM);
+				} else { c.socket.send_packet(DENY); } 
+
 			case QUIT:
-				io::printfn("Recieved QUIT");
 				c.close();
 				login::users.save();
 				listen();
@@ -56,8 +45,10 @@ fn int main() {
 				continue;
 			default:
 		}
-		*/
 	}
 
 	//return 0;
 }
+
+
+

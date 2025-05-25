@@ -9,14 +9,16 @@ struct Packet {
 }
 
 enum PacketType : char {
+  EMPTY,
+
   PING,
 
-  MULTIPACKET_HEADER,
-
-  VERSION,
+  VERSION_REQ,
+  VERSION_SRV,
 
   USERNAME,
   PASSWORD,
+  LOGIN,
 
   CONFIRM,
   DENY,
@@ -29,7 +31,7 @@ fn char[] Packet.as_data(&self) {
   char[] dat = mem::temp_array(char, self.data.len + 2);
   dat[0] = self.type.ordinal;
   dat[1] = (char)self.data.len;
-  mem::copy(&dat[2], self.data, self.data.len);
+  if (self.data.len > 0) mem::copy(&dat[2], self.data, self.data.len);
 
   return dat;
 }
@@ -47,21 +49,32 @@ fn void Socket.send_packet(&self, PacketType type, char[] data = {}) {
 
   switch (type) {
     case PING:     io::printfn("Sent PING");
-    case MULTIPACKET_HEADER: io::printfn("Sent MULTIPACKET_HEADER");
-    case VERSION:  io::printfn("Requested VERSION");
+
+    case VERSION_REQ: io::printfn("Requested VERSION");
+    case VERSION_SRV: io::printfn("Sent VERSION");
+
     case USERNAME: io::printfn("Sent USERNAME [%s]", (String)data);
     case PASSWORD: io::printfn("Sent PASSWORD [%s]", (String)data);
+    case LOGIN:    io::printfn("Sent Login request");
+
     case CONFIRM:  io::printfn("Sent CONFIRM");
     case DENY:     io::printfn("Sent DENY");
+
     case QUIT:     io::printfn("Sent QUIT");
+
+    default:
   }
 }
 <* Recieve packet from server *>
 fn Packet Socket.get_packet(&self) {
   char[] header = mem::temp_array(char, 2);
+  char[] data;
   self.read(header)!!;
-  char[] data = mem::temp_array(char, header[1]);
-  self.read(data)!!;
+
+  if (header[1] > 0) {
+    data = mem::temp_array(char, header[1]);
+    self.read(data)!!;
+  }
 
   Packet output;
   output.type = PacketType.from_ordinal(header[0]);
@@ -70,22 +83,22 @@ fn Packet Socket.get_packet(&self) {
     case PING:
       io::printfn("Recieved PING");
 
-    case MULTIPACKET_HEADER: // TODO:
-      io::printfn("Recieved MULTIPACKET_HEADER");
-
-    case VERSION:
-      output.data = mem::temp_array(char, 16);
-      mem::copy(output.data, data, 16);
-      io::printfn("Recieved VERSION [%s]", (String)output.data);
+    case VERSION_REQ:
+      io::printfn("Recieved VERSION_REQUEST");
+    case VERSION_SRV:
+      output.data = data;
+      io::printfn("Recieved VERSION [%s]", (String)data);
 
     case USERNAME:
-      output.data = mem::temp_array(char, 16);
-      mem::copy(output.data, data, 16);
-      io::printfn("Recieved USERNAME [%s]", (String)output.data);
+      output.data = mem::temp_array(char, header[1]);
+      mem::copy(output.data, data, header[1]);
+      io::printfn("Recieved USERNAME [%s]-[%d]", (String)output.data,header[1]);
     case PASSWORD:
-      output.data = mem::temp_array(char, 16);
-      mem::copy(output.data, data, 16);
+      output.data = mem::temp_array(char, header[1]);
+      mem::copy(output.data, data, header[1]);
       io::printfn("Recieved PASSWORD [%s]", (String)output.data);
+case LOGIN:
+      io::printfn("Recieved LOGIN");
 
     case CONFIRM:
       io::printfn("Recieved CONFIRM");
@@ -93,7 +106,9 @@ fn Packet Socket.get_packet(&self) {
       io::printfn("Recieved DENY");
 
     case QUIT:
-      io::printfn("Recieved PING");
+      io::printfn("Severed connection");
+
+    default:
   }
 
   return output;
@@ -105,5 +120,16 @@ fn Packet new(PacketType type, char[] data = {}) {
   output.data = data;
 
   return output;
+}
+
+<**>
+fn String String.cut_trailing(&self) {
+  int count;
+  for (int i; i < self.len; i++) {
+    if (((char[])*self)[i] != '\0') count++;
+  }
+  char[] new = mem::temp_array(char, count);
+  mem::copy(&new, self, count);
+  return (String)new;
 }
 
