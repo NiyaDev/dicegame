@@ -58,7 +58,6 @@ fn int main(String[] args) {
 		if (raygui::button({50,150,100,40},"Login")) {
 			socket = tcp::connect(common::IP_ADDRESS, common::PORT)!!;
 
-			//io::printfn("[%s] [%s]",username,password);
 			socket.send_packet(USERNAME, (char[])(username.cut_trailing()));
 			socket.send_packet(PASSWORD, (char[])(password.cut_trailing()));
 			socket.send_packet(LOGIN);
@@ -66,7 +65,7 @@ fn int main(String[] args) {
 			Packet cod = socket.get_packet();
 			if (cod.type == CONFIRM) {
 				io::printn("LOGGED IN!!!");
-			} else {
+			} else if (cod.type == DENY) {
 				io::printn("LOGIN FAILED!!");
 			}
 
