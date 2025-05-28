@@ -1,5 +1,7 @@
 
 ## Dice Game (To be named)
 
-Multiplayer "tabletop" game
+Character-based, Multiplayer "tabletop" game
+
+Take the role of a monster fighting other monsters for the right to rule.
 
